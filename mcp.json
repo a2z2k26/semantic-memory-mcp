@@ -1,0 +1,66 @@
+{
+  "name": "bumba-memory",
+  "version": "1.0.0",
+  "description": "Shared semantic memory MCP server for multi-agent coordination",
+  "transport": "stdio",
+  "command": "node",
+  "args": ["mcp-server.js"],
+  "env": {
+    "BUMBA_MEMORY_DIR": "~/.bumba/memory",
+    "BUMBA_LOG_LEVEL": "INFO"
+  },
+  "tools": [
+    "memory_store",
+    "memory_retrieve",
+    "memory_search",
+    "memory_list",
+    "memory_delete",
+    "memory_stats",
+    "memory_rebuild_index",
+    "memory_list_conflicts",
+    "memory_resolve_conflict",
+    "memory_set_merge_strategy",
+    "memory_pressure",
+    "memory_evict",
+    "team_start_task",
+    "team_complete_task",
+    "team_store_context",
+    "team_get_context",
+    "team_record_decision",
+    "team_store_artifact",
+    "team_search",
+    "team_get_status",
+    "system_health",
+    "system_instances"
+  ],
+  "categories": {
+    "core_memory": [
+      "memory_store",
+      "memory_retrieve",
+      "memory_search",
+      "memory_list",
+      "memory_delete",
+      "memory_stats",
+      "memory_rebuild_index",
+      "memory_list_conflicts",
+      "memory_resolve_conflict",
+      "memory_set_merge_strategy",
+      "memory_pressure",
+      "memory_evict"
+    ],
+    "team_coordination": [
+      "team_start_task",
+      "team_complete_task",
+      "team_store_context",
+      "team_get_context",
+      "team_record_decision",
+      "team_store_artifact",
+      "team_search",
+      "team_get_status"
+    ],
+    "multi_instance": [
+      "system_health",
+      "system_instances"
+    ]
+  }
+}

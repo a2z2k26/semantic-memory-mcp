@@ -1,0 +1,27 @@
+{
+  "name": "@bumba/memory",
+  "version": "1.0.0",
+  "description": "Shared semantic memory MCP server for multi-agent coordination",
+  "main": "index.js",
+  "bin": {
+    "bumba-memory-server": "./mcp-server.js"
+  },
+  "keywords": [
+    "memory",
+    "sqlite",
+    "semantic",
+    "caching",
+    "mcp",
+    "multi-agent"
+  ],
+  "author": "BUMBA",
+  "license": "MIT",
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "dependencies": {
+    "better-sqlite3": "^9.0.0",
+    "fs-extra": "^11.0.0",
+    "@modelcontextprotocol/sdk": "^1.0.0"
+  }
+}
