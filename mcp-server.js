@@ -27,6 +27,8 @@ const logger = new Logger('MCPServer');
 
 // Memory system imports
 const { SQLiteStorageAdapter } = require('./sqlite-storage-adapter');
+const PeerRegistry = require('./peer-registry');
+const PeerMessaging = require('./peer-messaging');
 
 /**
  * TeamMemory wrapper that doesn't depend on @bumba/shared
@@ -217,6 +219,8 @@ class BumbaMemoryMCPServer {
 
     this.storage = null;
     this.teamMemory = null;
+    this.peerRegistry = null;
+    this.peerMessaging = null;
 
     this.server = new Server(
       {
@@ -281,9 +285,19 @@ class BumbaMemoryMCPServer {
     this.storage = new SQLiteStorageAdapter({ dbPath });
     await this.storage.initialize();
 
+    // Initialize peer discovery modules
+    this.peerRegistry = new PeerRegistry(this.storage);
+    this.peerMessaging = new PeerMessaging(this.storage);
+
     // Initialize team memory
     this.teamMemory = new TeamMemoryLocal({ memoryDir: this.memoryDir });
     await this.teamMemory.initialize();
+
+    // Start cleanup interval for stale peers and old messages
+    setInterval(() => {
+      this.peerRegistry.cleanupStale();
+      this.peerMessaging.cleanup({ maxAgeSeconds: 3600 });
+    }, 30000); // 30 second cleanup interval
 
     // Clean up stale instances (older than 24 hours)
     await this.cleanupStaleInstances();
@@ -584,6 +598,110 @@ class BumbaMemoryMCPServer {
                 }
               }
             }
+          },
+          // Peer Discovery Tools (Sprint: Peer Discovery)
+          {
+            name: 'peer_register',
+            description: 'Register an agent in the peer discovery system',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                agentId: { type: 'string', description: 'Unique identifier for the agent' },
+                machine: { type: 'string', description: 'Machine/hostname where agent is running' },
+                capabilities: { type: 'array', items: { type: 'string' }, description: 'List of capabilities this agent provides (e.g., "engineering", "qa")' },
+                endpoint: { type: 'string', description: 'Optional network endpoint for direct communication' },
+                metadata: { type: 'object', description: 'Optional metadata about the agent' }
+              },
+              required: ['agentId', 'machine', 'capabilities']
+            }
+          },
+          {
+            name: 'peer_heartbeat',
+            description: 'Send a heartbeat to maintain peer presence',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                agentId: { type: 'string', description: 'Agent ID' },
+                status: { type: 'string', description: 'Current status (online, busy, idle, offline)' },
+                currentTask: { type: 'string', description: 'Current task being executed' }
+              },
+              required: ['agentId']
+            }
+          },
+          {
+            name: 'peer_deregister',
+            description: 'Deregister an agent from the peer discovery system',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                agentId: { type: 'string', description: 'Agent ID to deregister' }
+              },
+              required: ['agentId']
+            }
+          },
+          {
+            name: 'peer_list',
+            description: 'List peers with optional filters',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                machine: { type: 'string', description: 'Filter by machine' },
+                status: { type: 'string', description: 'Filter by status (online, offline, busy, idle)' },
+                capability: { type: 'string', description: 'Filter by capability' },
+                includeStale: { type: 'boolean', description: 'Include offline/stale peers (default: false)' }
+              }
+            }
+          },
+          {
+            name: 'peer_get',
+            description: 'Get details of a specific peer',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                agentId: { type: 'string', description: 'Agent ID' }
+              },
+              required: ['agentId']
+            }
+          },
+          {
+            name: 'peer_send_message',
+            description: 'Send a message to another agent',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                source: { type: 'string', description: 'Source agent ID' },
+                target: { type: 'string', description: 'Target agent ID' },
+                message: { description: 'Message content (string or object)' },
+                messageType: { type: 'string', description: 'Type of message (default: standard)' }
+              },
+              required: ['source', 'target', 'message']
+            }
+          },
+          {
+            name: 'peer_check_messages',
+            description: 'Check for incoming messages',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                agentId: { type: 'string', description: 'Agent ID' },
+                limit: { type: 'number', description: 'Maximum messages to retrieve (default: 100)' },
+                markDelivered: { type: 'boolean', description: 'Mark messages as delivered (default: true)' }
+              },
+              required: ['agentId']
+            }
+          },
+          {
+            name: 'peer_broadcast',
+            description: 'Broadcast a message to all active peers',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                source: { type: 'string', description: 'Source agent ID' },
+                message: { description: 'Message content (string or object)' },
+                messageType: { type: 'string', description: 'Type of message (default: broadcast)' }
+              },
+              required: ['source', 'message']
+            }
           }
         ]
       };
@@ -646,6 +764,24 @@ class BumbaMemoryMCPServer {
             return await this.handleMemoryPressure();
           case 'memory_evict':
             return await this.handleMemoryEvict(args);
+
+          // Peer Discovery Tools
+          case 'peer_register':
+            return await this.handlePeerRegister(args);
+          case 'peer_heartbeat':
+            return await this.handlePeerHeartbeat(args);
+          case 'peer_deregister':
+            return await this.handlePeerDeregister(args);
+          case 'peer_list':
+            return await this.handlePeerList(args);
+          case 'peer_get':
+            return await this.handlePeerGet(args);
+          case 'peer_send_message':
+            return await this.handlePeerSendMessage(args);
+          case 'peer_check_messages':
+            return await this.handlePeerCheckMessages(args);
+          case 'peer_broadcast':
+            return await this.handlePeerBroadcast(args);
 
           default:
             throw new Error(`Unknown tool: ${name}`);
@@ -1176,6 +1312,114 @@ class BumbaMemoryMCPServer {
         isError: true
       };
     }
+  }
+
+  // ============================================
+  // Peer Discovery Tool Handlers
+  // ============================================
+
+  async handlePeerRegister(args) {
+    const { agentId, machine, capabilities, endpoint, metadata } = args;
+    const peer = this.peerRegistry.register({
+      agentId,
+      machine,
+      capabilities,
+      endpoint,
+      metadata
+    });
+    return {
+      content: [{ type: 'text', text: JSON.stringify(peer, null, 2) }]
+    };
+  }
+
+  async handlePeerHeartbeat(args) {
+    const { agentId, status, currentTask } = args;
+    const result = this.peerRegistry.heartbeat(agentId, { status, currentTask });
+    return {
+      content: [{ type: 'text', text: JSON.stringify(result, null, 2) }]
+    };
+  }
+
+  async handlePeerDeregister(args) {
+    const { agentId } = args;
+    const result = this.peerRegistry.deregister(agentId);
+    return {
+      content: [{ type: 'text', text: JSON.stringify(result, null, 2) }]
+    };
+  }
+
+  async handlePeerList(args) {
+    const { machine, status, capability, includeStale } = args;
+    const peers = this.peerRegistry.listPeers({
+      machine,
+      status,
+      capability,
+      includeStale
+    });
+    return {
+      content: [{
+        type: 'text',
+        text: JSON.stringify({
+          count: peers.length,
+          peers
+        }, null, 2)
+      }]
+    };
+  }
+
+  async handlePeerGet(args) {
+    const { agentId } = args;
+    const peer = this.peerRegistry.getPeer(agentId);
+    if (!peer) {
+      return {
+        content: [{ type: 'text', text: `Peer not found: ${agentId}` }],
+        isError: true
+      };
+    }
+    return {
+      content: [{ type: 'text', text: JSON.stringify(peer, null, 2) }]
+    };
+  }
+
+  async handlePeerSendMessage(args) {
+    const { source, target, message, messageType } = args;
+    const result = this.peerMessaging.sendMessage({
+      source,
+      target,
+      message,
+      messageType
+    });
+    return {
+      content: [{ type: 'text', text: JSON.stringify(result, null, 2) }]
+    };
+  }
+
+  async handlePeerCheckMessages(args) {
+    const { agentId, limit, markDelivered } = args;
+    const messages = this.peerMessaging.checkMessages(agentId, {
+      limit,
+      markDelivered
+    });
+    return {
+      content: [{
+        type: 'text',
+        text: JSON.stringify({
+          count: messages.length,
+          messages
+        }, null, 2)
+      }]
+    };
+  }
+
+  async handlePeerBroadcast(args) {
+    const { source, message, messageType } = args;
+    const result = this.peerMessaging.broadcast(
+      { source, message, messageType },
+      this.peerRegistry
+    );
+    return {
+      content: [{ type: 'text', text: JSON.stringify(result, null, 2) }]
+    };
   }
 
   formatBytes(bytes) {

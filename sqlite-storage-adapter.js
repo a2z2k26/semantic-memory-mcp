@@ -202,6 +202,69 @@ class SQLiteStorageAdapter {
         ON tasks(updated_at DESC)
       `);
 
+      // ===== PEERS TABLE (Peer Discovery) =====
+      this.db.exec(`
+        CREATE TABLE IF NOT EXISTS peers (
+          agent_id TEXT PRIMARY KEY,
+          machine TEXT NOT NULL,
+          status TEXT NOT NULL DEFAULT 'online',
+          capabilities TEXT NOT NULL,
+          endpoint TEXT,
+          last_seen INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000),
+          registered_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000),
+          current_task TEXT,
+          metadata TEXT,
+          version_vector TEXT DEFAULT '{}'
+        )
+      `);
+
+      this.db.exec(`
+        CREATE INDEX IF NOT EXISTS idx_peers_machine
+        ON peers(machine)
+      `);
+
+      this.db.exec(`
+        CREATE INDEX IF NOT EXISTS idx_peers_status
+        ON peers(status)
+      `);
+
+      this.db.exec(`
+        CREATE INDEX IF NOT EXISTS idx_peers_last_seen
+        ON peers(last_seen DESC)
+      `);
+
+      // ===== PEER_MESSAGES TABLE (Agent-to-Agent Messaging) =====
+      this.db.exec(`
+        CREATE TABLE IF NOT EXISTS peer_messages (
+          message_id TEXT PRIMARY KEY,
+          source_agent_id TEXT NOT NULL,
+          target_agent_id TEXT NOT NULL,
+          message TEXT NOT NULL,
+          message_type TEXT NOT NULL DEFAULT 'standard',
+          delivered INTEGER NOT NULL DEFAULT 0,
+          delivered_at INTEGER,
+          created_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now') * 1000),
+          metadata TEXT,
+          FOREIGN KEY (source_agent_id) REFERENCES peers(agent_id),
+          FOREIGN KEY (target_agent_id) REFERENCES peers(agent_id)
+        )
+      `);
+
+      this.db.exec(`
+        CREATE INDEX IF NOT EXISTS idx_peer_messages_target
+        ON peer_messages(target_agent_id, delivered)
+      `);
+
+      this.db.exec(`
+        CREATE INDEX IF NOT EXISTS idx_peer_messages_source
+        ON peer_messages(source_agent_id)
+      `);
+
+      this.db.exec(`
+        CREATE INDEX IF NOT EXISTS idx_peer_messages_created
+        ON peer_messages(created_at DESC)
+      `);
+
       logger.info('📋 SQLite schema created successfully');
     });
 

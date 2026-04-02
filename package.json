@@ -20,8 +20,8 @@
     "node": ">=14.0.0"
   },
   "dependencies": {
-    "better-sqlite3": "^9.0.0",
-    "fs-extra": "^11.0.0",
-    "@modelcontextprotocol/sdk": "^1.0.0"
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "better-sqlite3": "^9.6.0",
+    "fs-extra": "^11.0.0"
   }
 }
