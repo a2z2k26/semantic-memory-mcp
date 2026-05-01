@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 >
-> **IMPORTANT:** This plan targets the **bumba-memory-mcp** repo at `/Users/az/Claude/bumba-memory-mcp/`, NOT bumba-mac. Clone or cd to that repo before executing.
+> **IMPORTANT:** This plan targets the **bumba-memory-mcp** repo. Set `$REPO_ROOT` to your local clone of this repository before executing the commands below.
 
 **Goal:** Add peer discovery, agent registration, real-time messaging, and presence awareness to the Bumba Memory MCP server — making it the shared coordination layer that all agents (across machines) connect to for both persistent memory and real-time coordination.
 
@@ -40,7 +40,7 @@
 - [ ] **Step 1: Read the current createSchema method**
 
 ```bash
-cd /Users/az/Claude/bumba-memory-mcp && grep -n "createSchema\|CREATE TABLE\|CREATE INDEX" sqlite-storage-adapter.js | head -40
+cd $REPO_ROOT && grep -n "createSchema\|CREATE TABLE\|CREATE INDEX" sqlite-storage-adapter.js | head -40
 ```
 
 - [ ] **Step 2: Add peer tables**
@@ -88,7 +88,7 @@ this.db.exec(`CREATE INDEX IF NOT EXISTS idx_peer_messages_created ON peer_messa
 - [ ] **Step 3: Verify schema migration works**
 
 ```bash
-cd /Users/az/Claude/bumba-memory-mcp && node -e "
+cd $REPO_ROOT && node -e "
 const sqlite3 = require('better-sqlite3');
 const db = new sqlite3('/tmp/test-peers.db');
 db.pragma('journal_mode = WAL');
@@ -125,7 +125,7 @@ Expected: Tables created successfully, includes `peers` and `peer_messages`.
 - [ ] **Step 4: Commit**
 
 ```bash
-cd /Users/az/Claude/bumba-memory-mcp && git add sqlite-storage-adapter.js
+cd $REPO_ROOT && git add sqlite-storage-adapter.js
 git commit -m "feat: add peers and peer_messages tables for agent discovery"
 ```
 
@@ -297,12 +297,12 @@ class PeerRegistry {
 module.exports = { PeerRegistry, STALE_THRESHOLD_SECONDS };
 ```
 
-Write to `/Users/az/Claude/bumba-memory-mcp/peer-registry.js`.
+Write to `$REPO_ROOT/peer-registry.js`.
 
 - [ ] **Step 2: Commit**
 
 ```bash
-cd /Users/az/Claude/bumba-memory-mcp && git add peer-registry.js
+cd $REPO_ROOT && git add peer-registry.js
 git commit -m "feat: add PeerRegistry for agent discovery and presence"
 ```
 
@@ -404,12 +404,12 @@ class PeerMessaging {
 module.exports = { PeerMessaging };
 ```
 
-Write to `/Users/az/Claude/bumba-memory-mcp/peer-messaging.js`.
+Write to `$REPO_ROOT/peer-messaging.js`.
 
 - [ ] **Step 2: Commit**
 
 ```bash
-cd /Users/az/Claude/bumba-memory-mcp && git add peer-messaging.js
+cd $REPO_ROOT && git add peer-messaging.js
 git commit -m "feat: add PeerMessaging for agent-to-agent communication"
 ```
 
@@ -423,7 +423,7 @@ git commit -m "feat: add PeerMessaging for agent-to-agent communication"
 - [ ] **Step 1: Read mcp-server.js tool registration section**
 
 ```bash
-cd /Users/az/Claude/bumba-memory-mcp && grep -n "name: 'peer\|name: 'system_health" mcp-server.js
+cd $REPO_ROOT && grep -n "name: 'peer\|name: 'system_health" mcp-server.js
 ```
 
 Understand where to add the new tools.
@@ -606,7 +606,7 @@ case 'peer_broadcast': {
 - [ ] **Step 5: Test the server starts without errors**
 
 ```bash
-cd /Users/az/Claude/bumba-memory-mcp && node -e "
+cd $REPO_ROOT && node -e "
 const { PeerRegistry } = require('./peer-registry');
 const { PeerMessaging } = require('./peer-messaging');
 console.log('Modules loaded successfully');
@@ -618,7 +618,7 @@ Expected: No import errors.
 - [ ] **Step 6: Commit**
 
 ```bash
-cd /Users/az/Claude/bumba-memory-mcp && git add mcp-server.js
+cd $REPO_ROOT && git add mcp-server.js
 git commit -m "feat: add 8 peer discovery MCP tools (register, heartbeat, list, message, broadcast)"
 ```
 
@@ -629,7 +629,7 @@ git commit -m "feat: add 8 peer discovery MCP tools (register, heartbeat, list, 
 - [ ] **Step 1: Write a test script**
 
 ```bash
-cd /Users/az/Claude/bumba-memory-mcp && node -e "
+cd $REPO_ROOT && node -e "
 const sqlite3 = require('better-sqlite3');
 const db = new sqlite3('/tmp/test-peers-integration.db');
 db.pragma('journal_mode = WAL');
@@ -699,7 +699,7 @@ Expected: All operations succeed, output shows correct counts and data.
 - [ ] **Step 2: Commit**
 
 ```bash
-cd /Users/az/Claude/bumba-memory-mcp && git add -A
+cd $REPO_ROOT && git add -A
 git commit -m "test: verify peer registry and messaging integration"
 ```
 

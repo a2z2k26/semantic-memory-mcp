@@ -1,5 +1,29 @@
+# Dependencies
 node_modules/
-.DS_Store
+
+# Environment
 .env
 .env.*
+
+# Logs
 *.log
+npm-debug.log*
+
+# Runtime memory storage (auto-generated)
+.bumba/
+*.db
+*.db-wal
+*.db-shm
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor / IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Local Claude Code workspace
+.claude/settings.local.json
