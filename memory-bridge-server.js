@@ -6,6 +6,27 @@
  * E2B sandboxes are completely isolated and cannot access the host filesystem,
  * so this bridge provides HTTP endpoints for memory sync operations.
  *
+ * SECURITY NOTICE
+ * ---------------
+ * This bridge is intended for LOCAL-ONLY use. It binds to 127.0.0.1 and
+ * requires a per-instance auth token for every endpoint except `/health`.
+ *
+ * DO NOT expose this server via a reverse proxy, port-forward it to a
+ * non-loopback interface, or otherwise make it reachable from the network.
+ * Doing so would allow remote callers to read/write the entire local
+ * memory store. The auth token, body size cap, and Host header check are
+ * defense-in-depth measures — they assume a localhost threat model
+ * (cohabitating processes / browser tabs / DNS rebinding), not a
+ * hardened internet-facing service.
+ *
+ * Token handling:
+ *   - Generated at startup (32 bytes hex via crypto.randomBytes), or
+ *     overridden via the BUMBA_BRIDGE_TOKEN env var.
+ *   - Printed once at startup and written to <memoryDir>/bridge-token
+ *     with mode 0600 so the orchestrator/sandbox runner can read it.
+ *   - Required as `X-Bridge-Token: <token>` on every request other
+ *     than `GET /health`. Compared with crypto.timingSafeEqual.
+ *
  * Usage:
  *   node memory-bridge-server.js [--port PORT]
  *
@@ -15,7 +36,7 @@
  *   GET  /context/:key - Get specific context
  *   POST /store       - Store memory entry
  *   POST /search      - Search memories
- *   GET  /health      - Health check
+ *   GET  /health      - Health check (no auth required)
  *   GET  /status      - Detailed status with team info
  */
 
@@ -24,6 +45,7 @@ const url = require('url');
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
+const crypto = require('crypto');
 
 // Load memory system components
 const { SQLiteStorageAdapter } = require('./sqlite-storage-adapter');
@@ -35,6 +57,14 @@ const logger = new Logger('MemoryBridge');
 // Configuration
 const DEFAULT_PORT = parseInt(process.env.MEMORY_BRIDGE_PORT) || 3847;
 const MEMORY_DIR = process.env.BUMBA_MEMORY_DIR || path.join(os.homedir(), '.bumba', 'memory');
+const DEFAULT_MAX_BODY_BYTES = 5 * 1024 * 1024; // 5 MB
+const MAX_BODY_BYTES = (() => {
+  const raw = process.env.BUMBA_BRIDGE_MAX_BODY;
+  if (!raw) return DEFAULT_MAX_BODY_BYTES;
+  const parsed = parseInt(raw, 10);
+  if (!Number.isFinite(parsed) || parsed <= 0) return DEFAULT_MAX_BODY_BYTES;
+  return parsed;
+})();
 
 class MemoryBridgeServer {
   constructor(options = {}) {
@@ -44,6 +74,9 @@ class MemoryBridgeServer {
     this.teamMemory = null;
     this.server = null;
     this.activeSandboxes = new Map(); // Track active sandbox contexts
+    this.authToken = null;
+    this.authTokenBuffer = null; // Pre-encoded buffer for timingSafeEqual
+    this.maxBodyBytes = options.maxBodyBytes || MAX_BODY_BYTES;
   }
 
   async initialize() {
@@ -64,7 +97,32 @@ class MemoryBridgeServer {
     const teamMemoryPath = path.join(this.memoryDir, 'team-memory.json');
     this.teamMemory = new TeamMemory({ storagePath: teamMemoryPath });
 
+    // Initialize auth token (env override or freshly generated)
+    this.initializeAuthToken();
+
     logger.info('Memory systems initialized');
+  }
+
+  initializeAuthToken() {
+    const envToken = process.env.BUMBA_BRIDGE_TOKEN;
+    if (envToken && envToken.length > 0) {
+      this.authToken = envToken;
+      logger.info('Using auth token from BUMBA_BRIDGE_TOKEN env var');
+    } else {
+      this.authToken = crypto.randomBytes(32).toString('hex');
+    }
+    this.authTokenBuffer = Buffer.from(this.authToken, 'utf8');
+
+    // Persist to <memoryDir>/bridge-token with 0600 perms so the
+    // orchestrator/sandbox runner can read it but other users cannot.
+    const tokenPath = path.join(this.memoryDir, 'bridge-token');
+    try {
+      fs.writeFileSync(tokenPath, this.authToken, { mode: 0o600 });
+      // Re-chmod in case the file already existed with broader perms.
+      fs.chmodSync(tokenPath, 0o600);
+    } catch (e) {
+      logger.warn(`Failed to persist bridge token to ${tokenPath}: ${e.message}`);
+    }
   }
 
   async start() {
@@ -74,32 +132,69 @@ class MemoryBridgeServer {
 
     this.server.listen(this.port, '127.0.0.1', () => {
       logger.info(`Memory Bridge Server running at http://127.0.0.1:${this.port}`);
+      // Print the auth token exactly once so the operator can copy it.
+      // Subsequent reads should come from <memoryDir>/bridge-token.
+      logger.info(`Bridge auth token: ${this.authToken}`);
+      logger.info(`Token file: ${path.join(this.memoryDir, 'bridge-token')} (mode 0600)`);
+      logger.info(`Max body size: ${this.maxBodyBytes} bytes`);
       logger.info('Endpoints:');
       logger.info('  POST /sync-in     - Push context to sandbox');
       logger.info('  POST /sync-out    - Pull context from sandbox');
       logger.info('  GET  /context/:key - Get specific context');
       logger.info('  POST /store       - Store memory entry');
       logger.info('  POST /search      - Search memories');
-      logger.info('  GET  /health      - Health check');
+      logger.info('  GET  /health      - Health check (no auth)');
       logger.info('  GET  /status      - Detailed status');
     });
 
     return this.server;
   }
 
+  // Reject requests whose Host header is not a loopback name+port pair.
+  // Defends against DNS rebinding attacks where a remote name resolves to
+  // 127.0.0.1 — the loopback bind alone does not stop those.
+  isHostAllowed(hostHeader) {
+    if (!hostHeader || typeof hostHeader !== 'string') return false;
+    const allowed = new Set([
+      `127.0.0.1:${this.port}`,
+      `localhost:${this.port}`
+    ]);
+    return allowed.has(hostHeader);
+  }
+
+  // Constant-time token comparison. Returns true iff the supplied token
+  // matches the configured one.
+  isTokenValid(suppliedToken) {
+    if (!suppliedToken || typeof suppliedToken !== 'string') return false;
+    const supplied = Buffer.from(suppliedToken, 'utf8');
+    if (supplied.length !== this.authTokenBuffer.length) return false;
+    try {
+      return crypto.timingSafeEqual(supplied, this.authTokenBuffer);
+    } catch (_e) {
+      return false;
+    }
+  }
+
   async handleRequest(req, res) {
     const parsedUrl = url.parse(req.url, true);
     const pathname = parsedUrl.pathname;
 
-    // CORS headers for sandbox access
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    // 1. Host header check (DNS rebinding mitigation). Applied to ALL
+    //    requests, including /health, since rebinding attacks would
+    //    otherwise still succeed against the unauthenticated endpoint.
+    if (!this.isHostAllowed(req.headers.host)) {
+      return this.sendJson(res, 421, { error: 'misdirected request' });
+    }
 
-    if (req.method === 'OPTIONS') {
-      res.writeHead(204);
-      res.end();
-      return;
+    // 2. Auth check. /health is intentionally exempt so that liveness
+    //    probes (which may not have the token) keep working. Every
+    //    other endpoint requires a valid X-Bridge-Token header.
+    const isHealth = pathname === '/health' && req.method === 'GET';
+    if (!isHealth) {
+      const supplied = req.headers['x-bridge-token'];
+      if (!this.isTokenValid(supplied)) {
+        return this.sendJson(res, 401, { error: 'unauthorized' });
+      }
     }
 
     try {
@@ -139,23 +234,49 @@ class MemoryBridgeServer {
       // 404 for unknown routes
       this.sendJson(res, 404, { error: 'Not found', path: pathname });
     } catch (error) {
+      // Surface body-too-large as 413, everything else as 500.
+      if (error && error.code === 'PAYLOAD_TOO_LARGE') {
+        return this.sendJson(res, 413, { error: 'payload too large' });
+      }
       logger.error(`Request error: ${error.message}`);
       this.sendJson(res, 500, { error: error.message });
     }
   }
 
   async readBody(req) {
+    const limit = this.maxBodyBytes;
     return new Promise((resolve, reject) => {
-      let body = '';
-      req.on('data', chunk => body += chunk);
+      const chunks = [];
+      let total = 0;
+      let aborted = false;
+
+      req.on('data', chunk => {
+        if (aborted) return;
+        // chunk is a Buffer by default; .length is byte length.
+        total += chunk.length;
+        if (total > limit) {
+          aborted = true;
+          const err = new Error(`Request body exceeds ${limit} bytes`);
+          err.code = 'PAYLOAD_TOO_LARGE';
+          // Stop accepting more data and surface the 413 quickly.
+          req.destroy();
+          return reject(err);
+        }
+        chunks.push(chunk);
+      });
       req.on('end', () => {
+        if (aborted) return;
         try {
+          const body = Buffer.concat(chunks).toString('utf8');
           resolve(body ? JSON.parse(body) : {});
         } catch (e) {
           reject(new Error('Invalid JSON body'));
         }
       });
-      req.on('error', reject);
+      req.on('error', err => {
+        if (aborted) return;
+        reject(err);
+      });
     });
   }
 

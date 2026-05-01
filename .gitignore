@@ -27,3 +27,6 @@ Thumbs.db
 
 # Local Claude Code workspace
 .claude/settings.local.json
+
+# Internal planning docs (not for public)
+docs/internal/

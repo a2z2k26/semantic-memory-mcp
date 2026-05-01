@@ -1,7 +1,7 @@
 {
   "name": "bumba-memory",
   "version": "1.0.0",
-  "description": "Shared semantic memory MCP server for multi-agent coordination",
+  "description": "Shared semantic memory MCP server for multi-agent coordination with peer discovery",
   "transport": "stdio",
   "command": "node",
   "args": ["mcp-server.js"],
@@ -31,7 +31,15 @@
     "team_search",
     "team_get_status",
     "system_health",
-    "system_instances"
+    "system_instances",
+    "peer_register",
+    "peer_heartbeat",
+    "peer_deregister",
+    "peer_list",
+    "peer_get",
+    "peer_send_message",
+    "peer_check_messages",
+    "peer_broadcast"
   ],
   "categories": {
     "core_memory": [
@@ -61,6 +69,16 @@
     "multi_instance": [
       "system_health",
       "system_instances"
+    ],
+    "peer_discovery": [
+      "peer_register",
+      "peer_heartbeat",
+      "peer_deregister",
+      "peer_list",
+      "peer_get",
+      "peer_send_message",
+      "peer_check_messages",
+      "peer_broadcast"
     ]
   }
 }

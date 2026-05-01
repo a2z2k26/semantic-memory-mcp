@@ -998,9 +998,38 @@ class SQLiteStorageAdapter {
         params.push(options.type);
       }
 
-      // Sort
-      const sortBy = options.sortBy || 'updated_at';
-      const sortOrder = options.sortOrder || 'DESC';
+      // Sort - whitelist columns and direction to prevent SQL injection.
+      // Tasks table columns that are sensible to sort by:
+      const allowedSortColumns = new Set([
+        'task_id',
+        'type',
+        'status',
+        'complexity',
+        'created_at',
+        'updated_at'
+      ]);
+      const requestedSortBy = options.sortBy || 'updated_at';
+      let sortBy;
+      if (allowedSortColumns.has(requestedSortBy)) {
+        sortBy = requestedSortBy;
+      } else {
+        sortBy = 'updated_at';
+        logger.debug(
+          `listTasks: invalid sortBy "${requestedSortBy}", falling back to updated_at`
+        );
+      }
+
+      const requestedSortOrder = String(options.sortOrder || 'DESC').toUpperCase();
+      const sortOrder =
+        requestedSortOrder === 'ASC' || requestedSortOrder === 'DESC'
+          ? requestedSortOrder
+          : 'DESC';
+      if (sortOrder !== requestedSortOrder && options.sortOrder !== undefined) {
+        logger.debug(
+          `listTasks: invalid sortOrder "${options.sortOrder}", falling back to DESC`
+        );
+      }
+
       sql += ` ORDER BY ${sortBy} ${sortOrder}`;
 
       // Pagination

@@ -20,6 +20,23 @@ class PeerRegistry {
    */
   register({ agentId, machine, capabilities, endpoint, metadata = {} }) {
     try {
+      // Validate endpoint URL if provided. Reject non-http(s) protocols
+      // (e.g. file:, javascript:, data:) to prevent SSRF-adjacent attacks
+      // when other peers follow this URL.
+      if (endpoint !== undefined && endpoint !== null && endpoint !== '') {
+        let parsed;
+        try {
+          parsed = new URL(endpoint);
+        } catch (urlErr) {
+          throw new Error(`Invalid endpoint URL: ${endpoint}`);
+        }
+        if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+          throw new Error(
+            `Invalid endpoint protocol "${parsed.protocol}" - only http: and https: are allowed`
+          );
+        }
+      }
+
       const stmt = this.storage.db.prepare(`
         INSERT OR REPLACE INTO peers (
           agent_id,

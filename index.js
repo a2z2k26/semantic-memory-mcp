@@ -7,50 +7,37 @@
 const Logger = require('./lib/bumba-logger');
 const logger = new Logger('BumbaMemorySystem');
 
-// Unified memory system (primary interface)
-// Try @bumba/unified-memory primitive first, fall back to local copy
+// Unified memory system (primary interface) - local sqlite-storage-adapter implementation
 let UnifiedMemorySystem;
 try {
-  UnifiedMemorySystem = require('@bumba/unified-memory').UnifiedMemorySystem;
-} catch (e) {
-  try {
-    // Fallback to local sqlite-storage-adapter based implementation
-    const { SQLiteStorageAdapter } = require('./sqlite-storage-adapter');
-    // Create a minimal UnifiedMemorySystem wrapper
-    class LocalUnifiedMemorySystem {
-      constructor(config = {}) {
-        this.config = config;
-        this.storage = null;
-      }
-      async initialize() {
-        this.storage = new SQLiteStorageAdapter(this.config);
-        await this.storage.initialize();
-      }
-      async storeInMemory(key, data, options = {}) {
-        return this.storage.store(key, data, options);
-      }
-      async retrieveFromMemory(key) {
-        return this.storage.retrieve(key);
-      }
-      async searchMemory(query, tags = []) {
-        return this.storage.search(query, tags);
-      }
-      getStatus() { return { initialized: !!this.storage }; }
-      getCapabilities() { return ['sqlite', 'search']; }
-      async shutdown() { if (this.storage) await this.storage.close(); }
+  const { SQLiteStorageAdapter } = require('./sqlite-storage-adapter');
+  class LocalUnifiedMemorySystem {
+    constructor(config = {}) {
+      this.config = config;
+      this.storage = null;
     }
-    UnifiedMemorySystem = LocalUnifiedMemorySystem;
-  } catch (e2) {
-    // No memory system available
-    logger.warn('UnifiedMemorySystem not available:', e2.message);
-    UnifiedMemorySystem = null;
+    async initialize() {
+      this.storage = new SQLiteStorageAdapter(this.config);
+      await this.storage.initialize();
+    }
+    async storeInMemory(key, data, options = {}) {
+      return this.storage.store(key, data, options);
+    }
+    async retrieveFromMemory(key) {
+      return this.storage.retrieve(key);
+    }
+    async searchMemory(query, tags = []) {
+      return this.storage.search(query, tags);
+    }
+    getStatus() { return { initialized: !!this.storage }; }
+    getCapabilities() { return ['sqlite', 'search']; }
+    async shutdown() { if (this.storage) await this.storage.close(); }
   }
+  UnifiedMemorySystem = LocalUnifiedMemorySystem;
+} catch (e) {
+  logger.warn('UnifiedMemorySystem not available:', e.message);
+  UnifiedMemorySystem = null;
 }
-
-// NOTE: Legacy memory adapters were removed - use UnifiedMemorySystem instead
-// - consolidated-memory-manager (deleted)
-// - unified-memory-system-adapter (deleted)
-// - bumba-memory-system-adapter (deleted)
 
 /**
  * Factory function to create a unified memory system instance
@@ -110,7 +97,20 @@ class BumbaMemorySystem {
 
       // Initialize unified memory system
       if (this.config.useUnified) {
-        this.unifiedSystem = createMemorySystem(this.config.unified || {});
+        // Honor top-level dbPath as a shorthand for unified.dbPath
+        let unifiedConfig = this.config.unified;
+        if (this.config.dbPath !== undefined) {
+          if (unifiedConfig === undefined) {
+            unifiedConfig = { dbPath: this.config.dbPath };
+          } else if (unifiedConfig.dbPath !== undefined) {
+            logger.warn(
+              'Both top-level dbPath and unified.dbPath provided; using unified.dbPath and ignoring top-level dbPath'
+            );
+          } else {
+            unifiedConfig = { ...unifiedConfig, dbPath: this.config.dbPath };
+          }
+        }
+        this.unifiedSystem = createMemorySystem(unifiedConfig || {});
         await this.unifiedSystem.initialize();
       }
 
