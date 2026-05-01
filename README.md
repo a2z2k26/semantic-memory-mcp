@@ -75,7 +75,7 @@ Add the server to your Claude Code MCP config (typically `~/.claude/claude_deskt
   "mcpServers": {
     "bumba-memory": {
       "command": "node",
-      "args": ["/absolute/path/to/bumba-memory-mcp/mcp-server.js"],
+      "args": ["/absolute/path/to/bumba-memory-mcp/src/mcp-server.js"],
       "env": {
         "BUMBA_MEMORY_DIR": "~/.bumba/memory",
         "BUMBA_LOG_LEVEL": "INFO"
@@ -213,7 +213,7 @@ Override per pattern with `memory_set_merge_strategy`.
 The Memory Bridge is an optional HTTP front-end useful for environments that cannot speak MCP directly — for example, isolated sandboxes that need to push and pull context from the host.
 
 ```bash
-node memory-bridge-server.js [--port 3847]
+npm run bridge          # or: node src/memory-bridge-server.js
 ```
 
 **Endpoints:**

@@ -3,7 +3,7 @@
  * Sprint: Peer Discovery (Task 2)
  */
 
-const Logger = require('./lib/bumba-logger');
+const Logger = require('../lib/logger');
 
 const STALE_THRESHOLD_SECONDS = 300; // 5 minutes
 const logger = new Logger('PeerRegistry');

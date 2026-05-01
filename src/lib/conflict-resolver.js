@@ -9,7 +9,7 @@
 
 const EventEmitter = require('events');
 const crypto = require('crypto');
-const Logger = require('./bumba-logger');
+const Logger = require('./logger');
 const { VersionVector } = require('./version-vector');
 
 const logger = new Logger('ConflictResolver');

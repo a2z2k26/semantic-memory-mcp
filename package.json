@@ -4,22 +4,16 @@
   "description": "Shared semantic memory MCP server for multi-agent coordination",
   "main": "index.js",
   "bin": {
-    "bumba-memory-server": "./mcp-server.js"
+    "bumba-memory-server": "./src/mcp-server.js"
   },
   "scripts": {
-    "test": "node peer-discovery-test.js",
-    "start": "node mcp-server.js"
+    "test": "node test/peer-discovery.test.js",
+    "start": "node src/mcp-server.js",
+    "bridge": "node src/memory-bridge-server.js"
   },
   "files": [
-    "mcp-server.js",
+    "src/",
     "index.js",
-    "sqlite-storage-adapter.js",
-    "team-memory.js",
-    "peer-registry.js",
-    "peer-messaging.js",
-    "memory-bridge-server.js",
-    "lib/",
-    "schemas/",
     "mcp.json",
     "README.md",
     "LICENSE"

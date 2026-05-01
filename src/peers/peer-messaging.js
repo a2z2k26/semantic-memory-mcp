@@ -4,7 +4,7 @@
  */
 
 const crypto = require('crypto');
-const Logger = require('./lib/bumba-logger');
+const Logger = require('../lib/logger');
 
 const logger = new Logger('PeerMessaging');
 

@@ -4,13 +4,13 @@
  * @module memory
  */
 
-const Logger = require('./lib/bumba-logger');
+const Logger = require('./src/lib/logger');
 const logger = new Logger('BumbaMemorySystem');
 
 // Unified memory system (primary interface) - local sqlite-storage-adapter implementation
 let UnifiedMemorySystem;
 try {
-  const { SQLiteStorageAdapter } = require('./sqlite-storage-adapter');
+  const { SQLiteStorageAdapter } = require('./src/storage/sqlite-storage-adapter');
   class LocalUnifiedMemorySystem {
     constructor(config = {}) {
       this.config = config;

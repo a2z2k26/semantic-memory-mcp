@@ -4,7 +4,7 @@
   "description": "Shared semantic memory MCP server for multi-agent coordination with peer discovery",
   "transport": "stdio",
   "command": "node",
-  "args": ["mcp-server.js"],
+  "args": ["src/mcp-server.js"],
   "env": {
     "BUMBA_MEMORY_DIR": "~/.bumba/memory",
     "BUMBA_LOG_LEVEL": "INFO"

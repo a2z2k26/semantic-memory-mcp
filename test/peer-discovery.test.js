@@ -13,9 +13,9 @@
 
 const sqlite3 = require('better-sqlite3');
 const path = require('path');
-const PeerRegistry = require('./peer-registry');
-const PeerMessaging = require('./peer-messaging');
-const { SQLiteStorageAdapter } = require('./sqlite-storage-adapter');
+const PeerRegistry = require('../src/peers/peer-registry');
+const PeerMessaging = require('../src/peers/peer-messaging');
+const { SQLiteStorageAdapter } = require('../src/storage/sqlite-storage-adapter');
 
 // Test configuration
 const TEST_DB_PATH = ':memory:'; // In-memory SQLite for testing

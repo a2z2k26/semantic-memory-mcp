@@ -7,9 +7,9 @@
 const sqlite3 = require('better-sqlite3');
 const path = require('path');
 const fs = require('fs');
-const Logger = require('./lib/bumba-logger');
-const { VersionVector } = require('./lib/version-vector');
-const { ConflictResolver, ConflictStatus } = require('./lib/conflict-resolver');
+const Logger = require('../lib/logger');
+const { VersionVector } = require('../lib/version-vector');
+const { ConflictResolver, ConflictStatus } = require('../lib/conflict-resolver');
 
 const logger = new Logger('SQLiteStorageAdapter');
 

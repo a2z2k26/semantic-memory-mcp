@@ -47,10 +47,9 @@ const fs = require('fs');
 const os = require('os');
 const crypto = require('crypto');
 
-// Load memory system components
-const { SQLiteStorageAdapter } = require('./sqlite-storage-adapter');
-const TeamMemory = require('./team-memory');
-const Logger = require('./lib/bumba-logger');
+const { SQLiteStorageAdapter } = require('./storage/sqlite-storage-adapter');
+const TeamMemory = require('./memory/team-memory');
+const Logger = require('./lib/logger');
 
 const logger = new Logger('MemoryBridge');
 

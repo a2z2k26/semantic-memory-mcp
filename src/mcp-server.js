@@ -21,14 +21,12 @@ const fs = require('fs-extra');
 const path = require('path');
 const os = require('os');
 
-// Use local modules with fixed imports
-const Logger = require('./lib/bumba-logger');
+const Logger = require('./lib/logger');
 const logger = new Logger('MCPServer');
 
-// Memory system imports
-const { SQLiteStorageAdapter } = require('./sqlite-storage-adapter');
-const PeerRegistry = require('./peer-registry');
-const PeerMessaging = require('./peer-messaging');
+const { SQLiteStorageAdapter } = require('./storage/sqlite-storage-adapter');
+const PeerRegistry = require('./peers/peer-registry');
+const PeerMessaging = require('./peers/peer-messaging');
 
 /**
  * TeamMemory wrapper that doesn't depend on @bumba/shared

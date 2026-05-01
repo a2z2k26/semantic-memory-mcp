@@ -6,7 +6,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const Logger = require('./lib/bumba-logger');
+const Logger = require('../lib/logger');
 
 const logger = new Logger('TeamMemory');
 
