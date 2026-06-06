@@ -1,6 +1,6 @@
 /**
  * Bumba Logger
- * Simple logger wrapper for the Bumba Memory system
+ * Simple logger wrapper for the Semantic Memory system
  * Provides consistent logging across all modules without external dependencies
  *
  * Usage:

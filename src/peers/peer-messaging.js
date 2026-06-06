@@ -45,7 +45,7 @@ class PeerMessaging {
         0
       );
 
-      logger.info(`📤 Message sent from ${source} to ${target}`);
+      logger.info(` Message sent from ${source} to ${target}`);
 
       return {
         messageId,
@@ -89,7 +89,7 @@ class PeerMessaging {
 
         updateStmt.run(now, agentId);
 
-        logger.debug(`✅ Marked ${rows.length} messages as delivered for ${agentId}`);
+        logger.debug(` Marked ${rows.length} messages as delivered for ${agentId}`);
 
         // Mark rows as delivered in-memory
         rows = rows.map(row => ({
@@ -128,7 +128,7 @@ class PeerMessaging {
         sentCount++;
       }
 
-      logger.info(`📢 Broadcast from ${source} to ${sentCount} peers`);
+      logger.info(` Broadcast from ${source} to ${sentCount} peers`);
 
       return {
         source,
@@ -159,7 +159,7 @@ class PeerMessaging {
       const result = stmt.run(cutoff);
 
       if (result.changes > 0) {
-        logger.info(`🧹 Deleted ${result.changes} old delivered messages`);
+        logger.info(` Deleted ${result.changes} old delivered messages`);
       }
 
       return {

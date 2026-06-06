@@ -1,5 +1,5 @@
 /**
- * BUMBA Memory System - Unified Export Interface
+ * Semantic Memory System - Unified Export Interface
  * Consolidates all memory management functionality
  * @module memory
  */
@@ -88,12 +88,12 @@ class BumbaMemorySystem {
     this.unifiedSystem = null;
     this.legacySystems = null;
 
-    logger.info('🧠 BUMBA Memory System initializing...');
+    logger.info(' Semantic Memory System initializing...');
   }
 
   async initialize() {
     try {
-      logger.info('🧠 Initializing memory systems...');
+      logger.info(' Initializing memory systems...');
 
       // Initialize unified memory system
       if (this.config.useUnified) {
@@ -125,7 +125,7 @@ class BumbaMemorySystem {
       }
 
       this.initialized = true;
-      logger.info('🧠 Memory systems initialized successfully');
+      logger.info(' Memory systems initialized successfully');
 
       return true;
     } catch (error) {
@@ -135,12 +135,12 @@ class BumbaMemorySystem {
   }
 
   async migrateLegacyData() {
-    logger.info('🧠 Starting legacy data migration...');
+    logger.info(' Starting legacy data migration...');
 
     try {
       // Migration logic would go here
       // For now, just log the migration intention
-      logger.info('🧠 Legacy data migration completed');
+      logger.info(' Legacy data migration completed');
     } catch (error) {
       logger.error('Legacy data migration failed:', error);
     }
@@ -201,13 +201,13 @@ class BumbaMemorySystem {
   }
 
   async shutdown() {
-    logger.info('🧠 Shutting down memory systems...');
+    logger.info(' Shutting down memory systems...');
 
     if (this.unifiedSystem) {
       await this.unifiedSystem.shutdown();
     }
 
-    logger.info('🧠 Memory systems shut down');
+    logger.info(' Memory systems shut down');
   }
 
   // Alias for cleanup (for test compatibility)

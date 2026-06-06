@@ -1,6 +1,6 @@
 /**
- * Conflict Resolver for Bumba Memory
- * Sprint 2.2: Adapted from bumba-components/systems/design-catalog/conflict-resolver.js
+ * Conflict Resolver for Semantic Memory
+ * Sprint 2.2: Adapted from agent-primitives/systems/design-catalog/conflict-resolver.js
  *
  * Handles concurrent write conflicts in multi-instance memory scenarios.
  * Uses version vectors for causality detection and provides multiple

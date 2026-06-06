@@ -1,4 +1,4 @@
--- Bumba Memory MCP - SQLite Schema
+-- Semantic Memory MCP - SQLite Schema
 -- Version: 1.0.0
 -- Created: 2025-09-29
 

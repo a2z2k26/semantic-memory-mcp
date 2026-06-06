@@ -40,10 +40,10 @@ function assertEquals(actual, expected, message) {
 async function runTest(name, testFn) {
   try {
     await testFn();
-    console.log(`✅ ${name}`);
+    console.log(` ${name}`);
     testsPassed++;
   } catch (error) {
-    console.error(`❌ ${name}: ${error.message}`);
+    console.error(` ${name}: ${error.message}`);
     testsFailed++;
   }
 }
@@ -339,7 +339,7 @@ async function testFullWorkflow() {
 // ===== RUN ALL TESTS =====
 
 async function runAllTests() {
-  console.log('🧪 Starting Peer Discovery Integration Tests\n');
+  console.log(' Starting Peer Discovery Integration Tests\n');
 
   await runTest('Scenario 1: Register 2 peers', testRegisterPeers);
   await runTest('Scenario 2: List peers and filter by capability', testListPeers);
@@ -351,7 +351,7 @@ async function runAllTests() {
   await runTest('Scenario 8: Full workflow', testFullWorkflow);
 
   // Summary
-  console.log(`\n📊 Test Results: ${testsPassed} passed, ${testsFailed} failed`);
+  console.log(`\n Test Results: ${testsPassed} passed, ${testsFailed} failed`);
 
   if (testsFailed > 0) {
     process.exit(1);

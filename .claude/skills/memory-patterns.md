@@ -1,11 +1,11 @@
 ---
 name: memory-patterns
-description: Patterns and best practices for using Bumba Memory in multi-agent workflows
+description: Patterns and best practices for using Semantic Memory in multi-agent workflows
 ---
 
-# Bumba Memory Patterns
+# Semantic Memory Patterns
 
-This skill documents patterns for effectively using the Bumba Memory MCP server in multi-agent coordination scenarios.
+This skill documents patterns for effectively using the Semantic Memory MCP server in multi-agent coordination scenarios.
 
 ## Pattern 1: Context Handoff
 

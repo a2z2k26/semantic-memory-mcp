@@ -45,7 +45,7 @@ class SQLiteStorageAdapter {
       this.createSchema();
 
       this.initialized = true;
-      logger.info(`📦 SQLite storage initialized: ${this.dbPath}`);
+      logger.info(` SQLite storage initialized: ${this.dbPath}`);
 
       return true;
     } catch (error) {
@@ -265,7 +265,7 @@ class SQLiteStorageAdapter {
         ON peer_messages(created_at DESC)
       `);
 
-      logger.info('📋 SQLite schema created successfully');
+      logger.info(' SQLite schema created successfully');
     });
 
     transaction();
@@ -311,14 +311,14 @@ class SQLiteStorageAdapter {
       const ftsCount = this.db.prepare('SELECT COUNT(*) as count FROM knowledge_fts').get().count;
 
       if (existingCount > ftsCount) {
-        logger.info(`🔄 Migrating ${existingCount - ftsCount} entries to FTS5 index...`);
+        logger.info(` Migrating ${existingCount - ftsCount} entries to FTS5 index...`);
 
         // Rebuild FTS index from knowledge table
         this.db.exec(`
           INSERT INTO knowledge_fts(knowledge_fts) VALUES('rebuild')
         `);
 
-        logger.info('✅ FTS5 index migration complete');
+        logger.info(' FTS5 index migration complete');
       }
     } catch (error) {
       // FTS rebuild might fail on first run if table is empty, which is fine
@@ -334,13 +334,13 @@ class SQLiteStorageAdapter {
    */
   rebuildFTSIndex() {
     try {
-      logger.info('🔄 Rebuilding FTS5 index...');
+      logger.info(' Rebuilding FTS5 index...');
 
       // Delete all FTS entries and rebuild from knowledge table
       this.db.exec(`INSERT INTO knowledge_fts(knowledge_fts) VALUES('rebuild')`);
 
       const count = this.db.prepare('SELECT COUNT(*) as count FROM knowledge_fts').get().count;
-      logger.info(`✅ FTS5 index rebuilt with ${count} entries`);
+      logger.info(` FTS5 index rebuilt with ${count} entries`);
 
       return { success: true, entriesIndexed: count };
     } catch (error) {
@@ -423,7 +423,7 @@ class SQLiteStorageAdapter {
 
       const result = stmt.run(cutoff);
 
-      logger.info(`🧹 Cleaned up ${result.changes} expired contexts`);
+      logger.info(` Cleaned up ${result.changes} expired contexts`);
       return result.changes;
     } catch (error) {
       logger.error('Failed to cleanup contexts:', error);
@@ -1064,7 +1064,7 @@ class SQLiteStorageAdapter {
 
   vacuum() {
     this.db.exec('VACUUM');
-    logger.info('🧹 Database vacuumed');
+    logger.info(' Database vacuumed');
   }
 
   getStats() {
@@ -1088,7 +1088,7 @@ class SQLiteStorageAdapter {
     if (this.db) {
       this.db.close();
       this.initialized = false;
-      logger.info('📦 SQLite storage closed');
+      logger.info(' SQLite storage closed');
     }
   }
 

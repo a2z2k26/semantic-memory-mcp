@@ -62,7 +62,7 @@ class PeerRegistry {
         JSON.stringify(metadata)
       );
 
-      logger.info(`✅ Peer registered: ${agentId} on ${machine}`);
+      logger.info(` Peer registered: ${agentId} on ${machine}`);
 
       return {
         agentId,
@@ -118,7 +118,7 @@ class PeerRegistry {
         return null;
       }
 
-      logger.debug(`💓 Heartbeat from ${agentId}`);
+      logger.debug(` Heartbeat from ${agentId}`);
       return { agentId, lastSeen: now, status, currentTask };
     } catch (error) {
       logger.error('Failed to send heartbeat:', error);
@@ -145,7 +145,7 @@ class PeerRegistry {
       const result = stmt.run(agentId);
 
       if (result.changes > 0) {
-        logger.info(`🔴 Peer deregistered: ${agentId}`);
+        logger.info(` Peer deregistered: ${agentId}`);
         return { agentId, deregisteredAt: Date.now() };
       }
 
@@ -243,7 +243,7 @@ class PeerRegistry {
       const result = stmt.run(staleThreshold);
 
       if (result.changes > 0) {
-        logger.info(`🔄 Marked ${result.changes} peers as offline`);
+        logger.info(` Marked ${result.changes} peers as offline`);
       }
 
       return {

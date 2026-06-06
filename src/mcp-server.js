@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Bumba Memory MCP Server
+ * Semantic Memory MCP Server
  * Provides shared semantic memory for multi-agent coordination
  *
  * Usage:
@@ -207,7 +207,7 @@ class TeamMemoryLocal {
 }
 
 /**
- * Bumba Memory MCP Server
+ * Semantic Memory MCP Server
  */
 class BumbaMemoryMCPServer {
   constructor(options = {}) {
@@ -236,7 +236,7 @@ class BumbaMemoryMCPServer {
   }
 
   async initialize() {
-    logger.info('Initializing Bumba Memory MCP Server...');
+    logger.info('Initializing Semantic Memory MCP Server...');
 
     // Create shared directory structure for multi-instance coordination
     // ~/.bumba/memory/
@@ -300,7 +300,7 @@ class BumbaMemoryMCPServer {
     // Clean up stale instances (older than 24 hours)
     await this.cleanupStaleInstances();
 
-    logger.info('Bumba Memory MCP Server initialized', {
+    logger.info('Semantic Memory MCP Server initialized', {
       memoryDir: this.memoryDir,
       instanceId: this.instanceId
     });
@@ -1052,15 +1052,15 @@ class BumbaMemoryMCPServer {
     const transport = new StdioServerTransport();
     await this.server.connect(transport);
 
-    logger.info('Bumba Memory MCP Server running on stdio');
+    logger.info('Semantic Memory MCP Server running on stdio');
   }
 
   async shutdown() {
-    logger.info('Shutting down Bumba Memory MCP Server...');
+    logger.info('Shutting down Semantic Memory MCP Server...');
     if (this.storage) {
       await this.storage.close();
     }
-    logger.info('Bumba Memory MCP Server shut down');
+    logger.info('Semantic Memory MCP Server shut down');
   }
 
   // ============================================

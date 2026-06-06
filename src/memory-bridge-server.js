@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Bumba Memory Bridge Server
+ * Semantic Memory Bridge Server
  *
  * HTTP API that proxies memory operations for E2B sandboxes.
  * E2B sandboxes are completely isolated and cannot access the host filesystem,

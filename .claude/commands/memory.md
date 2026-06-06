@@ -1,6 +1,6 @@
 ---
 name: memory
-description: Interact with shared Bumba Memory MCP system
+description: Interact with shared Semantic Memory MCP system
 arguments:
   - name: action
     description: "Action: store, retrieve, search, list, stats, health, team, handoff, decide, sync, sandboxes"
@@ -17,9 +17,9 @@ arguments:
     description: Rationale for decision (for decide action)
 ---
 
-# Bumba Memory Command
+# Semantic Memory Command
 
-Execute memory operations against the shared Bumba Memory MCP server.
+Execute memory operations against the shared Semantic Memory MCP server.
 
 ## Available Actions
 
