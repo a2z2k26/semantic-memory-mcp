@@ -30,12 +30,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/a2z2k26/bumba-memory-mcp.git"
+    "url": "git+https://github.com/a2z2k26/semantic-memory-mcp.git"
   },
   "bugs": {
-    "url": "https://github.com/a2z2k26/bumba-memory-mcp/issues"
+    "url": "https://github.com/a2z2k26/semantic-memory-mcp/issues"
   },
-  "homepage": "https://github.com/a2z2k26/bumba-memory-mcp#readme",
+  "homepage": "https://github.com/a2z2k26/semantic-memory-mcp#readme",
   "engines": {
     "node": ">=14.0.0"
   },

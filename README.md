@@ -1,10 +1,15 @@
 ```
-██████╗ ██╗   ██╗███╗   ███╗██████╗  █████╗     ███╗   ███╗███████╗███╗   ███╗ ██████╗ ██████╗ ██╗   ██╗    ███╗   ███╗ ██████╗██████╗
-██╔══██╗██║   ██║████╗ ████║██╔══██╗██╔══██╗    ████╗ ████║██╔════╝████╗ ████║██╔═══██╗██╔══██╗╚██╗ ██╔╝    ████╗ ████║██╔════╝██╔══██╗
-██████╔╝██║   ██║██╔████╔██║██████╔╝███████║    ██╔████╔██║█████╗  ██╔████╔██║██║   ██║██████╔╝ ╚████╔╝     ██╔████╔██║██║     ██████╔╝
-██╔══██╗██║   ██║██║╚██╔╝██║██╔══██╗██╔══██║    ██║╚██╔╝██║██╔══╝  ██║╚██╔╝██║██║   ██║██╔══██╗  ╚██╔╝      ██║╚██╔╝██║██║     ██╔═══╝
-██████╔╝╚██████╔╝██║ ╚═╝ ██║██████╔╝██║  ██║    ██║ ╚═╝ ██║███████╗██║ ╚═╝ ██║╚██████╔╝██║  ██║   ██║       ██║ ╚═╝ ██║╚██████╗██║
-╚═════╝  ╚═════╝ ╚═╝     ╚═╝╚═════╝ ╚═╝  ╚═╝    ╚═╝     ╚═╝╚══════╝╚═╝     ╚═╝ ╚═════╝ ╚═╝  ╚═╝   ╚═╝       ╚═╝     ╚═╝ ╚═════╝╚═╝
+ ____  _____ __  __    _    _   _ _____ ___ ____
+/ ___|| ____|  \/  |  / \  | \ | |_   _|_ _/ ___|
+\___ \|  _| | |\/| | / _ \ |  \| | | |  | | |
+ ___) | |___| |  | |/ ___ \| |\  | | |  | | |___
+|____/|_____|_|  |_/_/   \_\_| \_| |_| |___\____|
+
+ __  __ _____ __  __  ___  ______   __  __  __  ____ ____
+|  \/  | ____|  \/  |/ _ \|  _ \ \ / / |  \/  |/ ___|  _ \
+| |\/| |  _| | |\/| | | | | |_) \ V /  | |\/| | |   | |_) |
+| |  | | |___| |  | | |_| |  _ < | |   | |  | | |___|  __/
+|_|  |_|_____|_|  |_|\___/|_| \_\|_|   |_|  |_|\____|_|
 ```
 
 [![Node](https://img.shields.io/badge/node-14+-green.svg)](https://nodejs.org)
@@ -16,7 +21,7 @@
 
 ---
 
-### 🔴 What It Does ###
+### What It Does ###
 
 - Persistent shared memory across Claude Code sessions, worktrees, and sandboxes
 - Concurrent multi-instance access via SQLite WAL mode
@@ -27,7 +32,7 @@
 
 ---
 
-### 🟡 Features ###
+### Features ###
 
 - **SQLite + WAL mode** — concurrent reads from any number of MCP server instances
 - **FTS5 full-text search** — phrase, boolean, prefix, and column-scoped queries with BM25 ranking
@@ -39,20 +44,20 @@
 
 ---
 
-### 🏁 Installation ###
+### Installation ###
 
 Requires Node.js 14+.
 
 ```bash
-git clone https://github.com/a2z2k26/bumba-memory-mcp.git
-cd bumba-memory-mcp
+git clone https://github.com/a2z2k26/semantic-memory-mcp.git
+cd semantic-memory-mcp
 npm install
 npm install -g .   # optional: installs the `bumba-memory-server` bin
 ```
 
 ---
 
-### 🏁 MCP Configuration ###
+### MCP Configuration ###
 
 Add the server to your Claude Code MCP config (typically `~/.claude/claude_desktop_config.json`).
 
@@ -79,7 +84,7 @@ Add the server to your Claude Code MCP config (typically `~/.claude/claude_deskt
   "mcpServers": {
     "bumba-memory": {
       "command": "node",
-      "args": ["/absolute/path/to/bumba-memory-mcp/src/mcp-server.js"],
+      "args": ["/absolute/path/to/semantic-memory-mcp/src/mcp-server.js"],
       "env": { "BUMBA_MEMORY_DIR": "~/.bumba/memory" }
     }
   }
@@ -88,7 +93,7 @@ Add the server to your Claude Code MCP config (typically `~/.claude/claude_deskt
 
 ---
 
-### 🟢 Available Tools ###
+### Available Tools ###
 
 The server registers **30 MCP tools** across four categories.
 
@@ -102,7 +107,7 @@ The server registers **30 MCP tools** across four categories.
 
 ---
 
-### 🏁 FTS5 Search Syntax ###
+### FTS5 Search Syntax ###
 
 `memory_search` supports the full FTS5 query grammar:
 
@@ -118,7 +123,7 @@ The server registers **30 MCP tools** across four categories.
 
 ---
 
-### 🏁 Conflict Resolution ###
+### Conflict Resolution ###
 
 When multiple instances write the same key concurrently, conflicts are detected via version vectors and resolved per a configurable strategy.
 
@@ -135,7 +140,7 @@ Default strategies by key prefix: `user:*` → `last_write_wins`, `context:*` �
 
 ---
 
-### 🏁 Memory Key Conventions ###
+### Memory Key Conventions ###
 
 | Prefix | Purpose |
 |--------|---------|
@@ -150,7 +155,7 @@ Default strategies by key prefix: `user:*` → `last_write_wins`, `context:*` �
 
 ---
 
-### 🏁 Environment Variables ###
+### Environment Variables ###
 
 | Variable | Default | Description |
 |----------|---------|-------------|
@@ -161,7 +166,7 @@ Default strategies by key prefix: `user:*` → `last_write_wins`, `context:*` �
 
 ---
 
-### 🏁 Directory Structure ###
+### Directory Structure ###
 
 ```
 ~/.bumba/memory/
@@ -177,7 +182,7 @@ Default strategies by key prefix: `user:*` → `last_write_wins`, `context:*` �
 
 ---
 
-### 🟡 Memory Bridge (HTTP) ###
+### Memory Bridge (HTTP) ###
 
 Optional HTTP front-end for environments that cannot speak MCP directly — typically isolated sandboxes that need to push and pull context from the host.
 
@@ -191,7 +196,7 @@ All endpoints except `GET /health` require an `X-Bridge-Token` header. The token
 
 ---
 
-### 🔴 Security ###
+### Security ###
 
 The Memory Bridge is designed for **local-only** use. It binds to `127.0.0.1`, requires a per-instance auth token (`X-Bridge-Token`), rejects non-loopback `Host` headers as DNS-rebinding mitigation, and caps request bodies at 5 MiB.
 
@@ -201,7 +206,7 @@ See [SECURITY.md](./SECURITY.md) for the full threat model and reporting process
 
 ---
 
-### 🏁 Library API ###
+### Library API ###
 
 The memory system is also usable directly from Node.js by requiring this repo as a local clone (not currently published to npm):
 
@@ -226,7 +231,7 @@ await memory.shutdown();
 
 ---
 
-### 🟢 Claude Code Integration (Optional) ###
+### Claude Code Integration (Optional) ###
 
 This repo ships with optional Claude Code workspace assets under `.claude/`. They are **not** installed automatically — copy them into your own project's `.claude/` directory:
 
@@ -235,7 +240,7 @@ This repo ships with optional Claude Code workspace assets under `.claude/`. The
 
 ---
 
-### 🏁 Project Layout ###
+### Project Layout ###
 
 ```
 src/
@@ -251,13 +256,13 @@ test/                          # Integration tests
 
 ---
 
-### 🏁 License ###
+### License ###
 
 MIT — see [LICENSE](./LICENSE).
 
 ---
 
-### 🏁 Credits ###
+### Credits ###
 
 Author: **Andrew Zellinger**.
 

@@ -1,12 +1,12 @@
 # Contributing
 
-Thanks for your interest in improving bumba-memory-mcp.
+Thanks for your interest in improving semantic-memory-mcp.
 
 ## Development setup
 
 ```bash
-git clone https://github.com/a2z2k26/bumba-memory-mcp.git
-cd bumba-memory-mcp
+git clone https://github.com/a2z2k26/semantic-memory-mcp.git
+cd semantic-memory-mcp
 npm install
 npm test
 ```
